@@ -173,33 +173,35 @@
                 else if (30 < data[i].t && data[i].t <= 40) {
                     color = colors[3]
                 }
-                markers.push(new maptalks.Marker(data[i].lonlat, {
-                    'properties': {
-                        'value': data[i].t
-                    },
-                    'symbol': {
-                        'textFaceName': 'sans-serif',
-                        'textName': '{value}',          //value from name in geometry's properties
-                        'textWeight': 'normal', //'bold', 'bolder'
-                        'textStyle': 'normal', //'italic', 'oblique'
-                        'textSize': 16,
-                        'textFont': null,     //same as CanvasRenderingContext2D.font, override textName, textWeight and textStyle
-                        'textFill': '#34495e',
-                        'textOpacity': 0.8,
-                        'textHaloFill': color,
-                        'textHaloRadius': 2,
-                        'textWrapWidth': null,
-                        'textWrapCharacter': '\n',
-                        'textLineSpacing': 0,
+                markers.push(
+                    new maptalks.Marker(data[i].lonlat, {
+                        'properties': {
+                            'value': data[i].t
+                        },
+                        'symbol': {
+                            'textFaceName': 'sans-serif',
+                            'textName': '{value}',          //value from name in geometry's properties
+                            'textWeight': 'normal', //'bold', 'bolder'
+                            'textStyle': 'normal', //'italic', 'oblique'
+                            'textSize': 16,
+                            'textFont': null,     //same as CanvasRenderingContext2D.font, override textName, textWeight and textStyle
+                            'textFill': color,
+                            'textOpacity': 1,
+                            'textHaloFill': '#ffffff',
+                            'textHaloRadius': 2,
+                            'textWrapWidth': null,
+                            'textWrapCharacter': '\n',
+                            'textLineSpacing': 0,
 
-                        'textDx': 0,
-                        'textDy': 0,
+                            'textDx': 0,
+                            'textDy': 0,
 
-                        'textHorizontalAlignment': 'middle', //left | middle | right | auto
-                        'textVerticalAlignment': 'middle',   // top | middle | bottom | auto
-                        'textAlign': 'center' //left | right | center | auto
-                    }
-                }))
+                            'textHorizontalAlignment': 'middle', //left | middle | right | auto
+                            'textVerticalAlignment': 'middle',   // top | middle | bottom | auto
+                            'textAlign': 'center' //left | right | center | auto
+                        }
+                    })
+                )
             }
             var layer = map.getLayer('v');
             layer.addGeometry(markers)

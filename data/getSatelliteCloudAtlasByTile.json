@@ -1,0 +1,18 @@
+{
+	"code":200,
+	"data":{
+		"bbox":{
+			"minLon":60.0,
+			"maxLat":60.0,
+			"minLat":-12.0,
+			"maxLon":160.0
+		},
+		"values":{
+			"20190916100000":"stlt/h8/mct/20190916/inf/a29735d0353bac8efdcbb839fe2b0445",
+			"20190916101000":"stlt/h8/mct/20190916/inf/cec988e74fc711f04c9d85d8651edc64",
+			"20190916102000":"stlt/h8/mct/20190916/inf/56274bec41c018312ab1590a88a029ba",
+			"20190916095000":"stlt/h8/mct/20190916/inf/24fa5bf38909dc816fc36f024c22bf68"
+		},
+		"host":"http://cdnrepo.oss-cn-shanghai.aliyuncs.com/"
+	}
+}

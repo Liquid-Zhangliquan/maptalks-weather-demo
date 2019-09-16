@@ -1,0 +1,20 @@
+{
+	"code":200,
+	"data":{
+		"series":{
+			"20190916100000":"wcloud/img/mct/20190916/radar/rdbz/74002fb2dcddbfc0259ff54c68e02e31.PNG?x-oss-process=image/crop,x_-18,y_-292,w_3840,h_2257",
+			"20190916101000":"wcloud/img/mct/20190916/radar/rdbz/842252363cf011a0ebfe5a5d47880e4a.PNG?x-oss-process=image/crop,x_-18,y_-292,w_3840,h_2257",
+			"20190916103000":"wcloud/img/mct/20190916/radar/rdbz/4864bc16a655ae44e1851d307b2f0fb9.PNG?x-oss-process=image/crop,x_-18,y_-292,w_3840,h_2257",
+			"20190916102000":"wcloud/img/mct/20190916/radar/rdbz/6cadd18fb8c97ba68b9b86d4b40a3cbd.PNG?x-oss-process=image/crop,x_-18,y_-292,w_3840,h_2257",
+			"20190916095000":"wcloud/img/mct/20190916/radar/rdbz/61c2b16e2c5d0dc2a5864a693bbb1851.PNG?x-oss-process=image/crop,x_-18,y_-292,w_3840,h_2257",
+			"20190916104000":"wcloud/img/mct/20190916/radar/rdbz/4eb052e65067a90ce052f2c1490f8765.PNG?x-oss-process=image/crop,x_-18,y_-292,w_3840,h_2257"
+		},
+		"bbox":{
+			"minlon":72.60220819775851,
+			"maxlat":57.78865979056051,
+			"minlat":21.09432385306051,
+			"maxlon":156.9772081977585
+		},
+		"host":"http://cdnrepo.oss-cn-shanghai.aliyuncs.com/"
+	}
+}

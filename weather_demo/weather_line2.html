@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>面状展示（等值线2）</title>
+    <link href="../matalks/maptalks.css" rel="stylesheet" />
+    <script src="../matalks/maptalks.js"></script>
+    <script src="../js/jqure1.7.min.js"></script>
+    <style type="text/css">
+        html,
+        body {
+            margin: 0px;
+            height: 100%;
+            width: 100%
+        }
+
+        #map {
+            width: 100%;
+            height: 100%
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+
+    <script>
+
+        var map
+        function MapInit() {
+            map = new maptalks.Map('map', {
+                center: [110.13427734375, 38.3046703381182],
+                zoom: 6,
+                minZoom: 5,
+                baseLayer: new maptalks.TileLayer('googlemap', {
+                    style: 'Satellite',
+                    urlTemplate: 'http://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}'
+                })
+            });
+            var layer = new maptalks.VectorLayer('v', { enableAltitude: true }).addTo(map)
+            map.on('click', function (e) {
+                console.log(e.coordinate);
+            })
+            AjaxGET()
+        }
+        MapInit();
+
+        function AjaxGET() {
+            $.ajax({
+                type: "get",
+                url: "../data/low_could_newdata.json",
+                dataType: "json",
+                success: function (json) {
+                    console.log(json)
+                    AddPolygon(json.data.features)
+                }
+            });
+        }
+
+        function AddPolygon(data) {
+            var markers = [];
+            var lines = [];
+            var polygons = [];
+            for (var i = 0; i < data.length; i++) {
+                if (data[i].geometry.type === "Point") {
+                    markers.push(
+                        new maptalks.Marker(data[i].geometry.coordinates, {
+                            'properties': {
+                                'value': data[i].properties.val
+                            },
+                            'symbol': {
+                                'textFaceName': 'sans-serif',
+                                'textName': '{value}',          //value from name in geometry's properties
+                                'textWeight': 'normal', //'bold', 'bolder'
+                                'textStyle': 'normal', //'italic', 'oblique'
+                                'textSize': 10,
+                                'textFont': null,     //same as CanvasRenderingContext2D.font, override textName, textWeight and textStyle
+                                'textFill': '#ffffff',
+                                'textOpacity': 0.8,
+                                'textHaloFill': '#000000',
+                                'textHaloRadius': 2,
+                                'textWrapWidth': null,
+                                'textWrapCharacter': '\n',
+                                'textLineSpacing': 0,
+
+                                'textDx': 0,
+                                'textDy': 0,
+
+                                'textHorizontalAlignment': 'middle', //left | middle | right | auto
+                                'textVerticalAlignment': 'middle',   // top | middle | bottom | auto
+                                'textAlign': 'center' //left | right | center | auto
+                            }
+                        })
+                    )
+
+
+                } else if (data[i].geometry.type === "LineString") {
+                    lines.push(
+                        new maptalks.LineString(data[i].geometry.coordinates, {
+                            symbol: {
+                                'lineColor': data[i].properties.color,
+                                'lineWidth': 1,
+                                'textName': data[i].properties.val,
+                                'textPlacement': 'vertex-first',   // point, vertex, vertex-first, vertex-last, line
+                                'textFill': '#fff',
+                                'textFaceName': 'sans-serif',
+                                'textWeight': 'normal', //'bold', 'bolder'
+                                'textStyle': 'normal', //'italic', 'oblique'
+                                'textSize': 12,
+                                'textFont': null,     //same as CanvasRenderingContext2D.font, override textName, textWeight and textStyle
+                                'textOpacity': 1,
+                                'textHaloFill': '#fff',
+                                'textHaloRadius': 0.5,
+                                'textWrapWidth': null,
+                                'textLineSpacing': 0,
+
+                                'textDx': 0,
+                                'textDy': 0,
+
+                                'textHorizontalAlignment': 'middle', //left | middle | right | auto
+                                'textVerticalAlignment': 'middle',   // top | middle | bottom | auto
+                                'textAlign': 'center' //left | right | center | auto
+                            }
+                        })
+                    )
+                } else if (data[i].geometry.type === "Polygon") {
+                    polygons.push(
+                        new maptalks.Polygon(data[i].geometry.coordinates, {
+                            'smoothness': 0.5,
+                            // 'properties': {
+                            //     altitude: 10000
+                            // },
+                            'symbol': {
+                                'lineColor': data[i].properties.color,
+                                'lineWidth': 1,
+                                'polygonFill': data[i].properties.color,
+                                'polygonOpacity': 0.4,
+                                // 'textName': data[i].properties.val,
+                                'textPlacement': 'vertex-first',   // point, vertex, vertex-first, vertex-last, line
+                                'textFill': '#fff',
+                                'textFaceName': 'sans-serif',
+                                'textWeight': 'normal', //'bold', 'bolder'
+                                'textStyle': 'normal', //'italic', 'oblique'
+                                'textSize': 12,
+                                'textFont': null,     //same as CanvasRenderingContext2D.font, override textName, textWeight and textStyle
+                                'textOpacity': 1,
+                                'textHaloFill': '#fff',
+                                'textHaloRadius': 0.5,
+                                'textWrapWidth': null,
+                                'textLineSpacing': 0,
+
+                                'textDx': 0,
+                                'textDy': 0,
+
+                                'textHorizontalAlignment': 'middle', //left | middle | right | auto
+                                'textVerticalAlignment': 'middle',   // top | middle | bottom | auto
+                                'textAlign': 'center' //left | right | center | auto
+                            }
+                        })
+                    )
+                }
+
+
+            }
+            var layer = map.getLayer('v');
+
+            layer.addGeometry(polygons)
+            // layer.addGeometry(lines)
+            layer.addGeometry(markers)
+        }
+    </script>
+</body>
+
+</html>
