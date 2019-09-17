@@ -29,34 +29,45 @@
     <script>
 
         var map
-        function MapInit() {
+        function MapInit(data) {
             map = new maptalks.Map('map', {
                 center: [110.13427734375, 38.3046703381182],
                 zoom: 6,
                 minZoom: 5,
-                baseLayer: new maptalks.TileLayer('googlemap', {
-                    style: 'Satellite',
-                    urlTemplate: 'http://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}'
-                })
+                baseLayer: new maptalks.GroupTileLayer('base', [
+                    new maptalks.TileLayer('googlemap', {
+                        style: 'Satellite',
+                        urlTemplate: 'http://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}'
+                    }),
+                    new maptalks.TileLayer('could', {
+                        style: 'could',
+                        urlTemplate: 'http://cdnrepo.oss-cn-shanghai.aliyuncs.com/stlt/h8/mct/20190916/inf/cec988e74fc711f04c9d85d8651edc64/{z}/{x}/{y}.png',
+                        // renderer: 'canvas',
+                        maxZoom: 6
+                    }),
+                ])
+
             });
-            var layer = new maptalks.VectorLayer('v', { enableAltitude: true }).addTo(map)
             map.on('click', function (e) {
                 console.log(e.coordinate);
             })
-            AjaxGET()
         }
-        MapInit();
+
 
         function AjaxGET() {
             $.ajax({
                 type: "get",
-                url: "../data/low_could_newdata.json",
+                url: "../data/getSatelliteCloudAtlasByTile.json",
                 dataType: "json",
                 success: function (json) {
                     console.log(json)
+                    MapInit(json.data);
                 }
             });
         }
+
+
+        AjaxGET()
     </script>
 </body>
 

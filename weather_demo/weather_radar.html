@@ -50,13 +50,29 @@
         function AjaxGET() {
             $.ajax({
                 type: "get",
-                url: "../data/low_could_newdata.json",
+                url: "../data/getRadar.json",
                 dataType: "json",
                 success: function (json) {
                     console.log(json)
+                    AddRadar(json.data)
                 }
             });
         }
+        function AddRadar(data) {
+            var imageLayer = new maptalks.ImageLayer('images',
+                [
+                    {
+                        url: '../data/74002fb2dcddbfc0259ff54c68e02e31.png',
+                        // url: 'http://cdnrepo.oss-cn-shanghai.aliyuncs.com/wcloud/img/mct/20190916/radar/rdbz/74002fb2dcddbfc0259ff54c68e02e31.PNG?x-oss-process=image/crop,x_-18,y_-292,w_3840,h_2257',
+                        extent: [data.bbox.minlon, data.bbox.minlat, data.bbox.maxlon, data.bbox.maxlat],
+                        opacity: 1,
+                        renderer: 'canvas'
+                    },
+                ]);
+
+            map.addLayer(imageLayer);
+        }
+
     </script>
 </body>
 
