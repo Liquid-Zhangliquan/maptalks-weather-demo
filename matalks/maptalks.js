@@ -1,5 +1,5 @@
 /*!
- * maptalks v0.45.0
+ * maptalks v0.45.1
  * LICENSE : BSD-3-Clause
  * (c) 2016-2019 maptalks.org
  */
@@ -9,7 +9,7 @@
   (factory((global.maptalks = {})));
 }(this, (function (exports) { 'use strict';
 
-  var version = "0.45.0";
+  var version = "0.45.1";
 
   var INTERNAL_LAYER_PREFIX = '_maptalks__internal_layer_';
   var GEOMETRY_COLLECTION_TYPES = ['MultiPoint', 'MultiLineString', 'MultiPolygon', 'GeometryCollection'];
@@ -7085,9 +7085,6 @@
           res *= 0.5;
         }
 
-        resolutions[0] = null;
-        resolutions[1] = null;
-        resolutions[2] = null;
         return resolutions;
       }(),
       'fullExtent': {
@@ -11655,7 +11652,7 @@
 
     _proto._prepareShadow = function _prepareShadow(ctx, symbol) {
       if (symbol['shadowBlur']) {
-        ctx.shadowBlur = symbol['shadowBlur'];
+        ctx.shadowBlur = this.isHitTesting() ? 0 : symbol['shadowBlur'];
         ctx.shadowColor = symbol['shadowColor'] || '#000';
         ctx.shadowOffsetX = symbol['shadowOffsetX'] || 0;
         ctx.shadowOffsetY = symbol['shadowOffsetY'] || 0;
@@ -19332,6 +19329,10 @@
         options = {};
       }
 
+      if (this._mapAnimPlayer) {
+        this._stopAnim(this._mapAnimPlayer);
+      }
+
       this._isInternalAnimation = true;
       this._mapAnimPlayer = this.animateTo(view, options, step);
       delete this._isInternalAnimation;
@@ -20037,6 +20038,10 @@
     onZoomStart: function onZoomStart(nextZoom, origin) {
       if (!this.options['zoomable'] || this.isZooming()) {
         return;
+      }
+
+      if (this._mapAnimPlayer) {
+        this._stopAnim(this._mapAnimPlayer);
       }
 
       this._zooming = true;
@@ -25041,7 +25046,33 @@
       }
 
       this._sr = this._sr || new SpatialReference(this.options['spatialReference']);
+
+      if (this._srMinZoom === undefined) {
+        this._srMinZoom = this._sr.getMinZoom();
+        this._srMaxZoom = this._sr.getMaxZoom();
+      }
+
       return this._sr;
+    };
+
+    _proto.getMinZoom = function getMinZoom() {
+      var sr = this.getSpatialReference();
+
+      if (sr !== this.getMap().getSpatialReference()) {
+        return Math.max(_Layer.prototype.getMinZoom.call(this), this._srMinZoom);
+      }
+
+      return _Layer.prototype.getMinZoom.call(this);
+    };
+
+    _proto.getMaxZoom = function getMaxZoom() {
+      var sr = this.getSpatialReference();
+
+      if (sr !== this.getMap().getSpatialReference()) {
+        return Math.min(_Layer.prototype.getMaxZoom.call(this), this._srMaxZoom);
+      }
+
+      return _Layer.prototype.getMaxZoom.call(this);
     };
 
     _proto._getTileZoom = function _getTileZoom(zoom) {
@@ -31736,6 +31767,6 @@
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
-  typeof console !== 'undefined' && console.log && console.log('maptalks v0.45.0');
+  typeof console !== 'undefined' && console.log && console.log('maptalks v0.45.1');
 
 })));
