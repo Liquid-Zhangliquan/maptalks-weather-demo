@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>maptalks-three-terrain</title>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.97.0/build/three.min.js"></script>
+    <script type="text/javascript" src="../matalks/maptalks.three.js"></script>
+    <script type="text/javascript" src="../js/three/textureloader.js"></script>
+    <style>
+        html,
+        body {
+            margin: 0px;
+            height: 100%;
+            width: 100%;
+        }
+
+        #map {
+            width: 1000px;
+            height: 700px;
+            background-color: #000;
+        }
+
+        #height {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <canvas id="height"></canvas>
+    <script>
+        // parameters to ensure the THREE plane is georeferenced correctly on the map
+        var modelOrigin = [19.638807, 0.762392];
+        var modelAltitude = 0;
+        var modelRotate = [Math.PI / 2, 0, 0];
+        var modelScale = 5.31843220338983e-5;
+
+        // transformation parameters to position, rotate and scale the 3D model onto the map
+        // var modelTransform = {
+        //     translateX: mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude).x,
+        //     translateY: mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude).y,
+        //     translateZ: mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude).z,
+        //     rotateX: modelRotate[0],
+        //     rotateY: modelRotate[1],
+        //     rotateZ: modelRotate[2],
+        //     scale: modelScale
+        // };
+        var map = new maptalks.Map("map", {
+            center: [-0.048366, 0.570150],
+            zoom: 9,
+            pitch: 80,
+            bearing: 16.8,
+
+            centerCross: true,
+            doubleClickZoom: false,
+            // baseLayer: new maptalks.TileLayer('tile', {
+            //     urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+            //     subdomains: ['a', 'b', 'c', 'd'],
+            //     attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+            // })
+        });
+        var threeLayer = new maptalks.ThreeLayer('t', {
+            forceRenderOnMoving: true,
+            forceRenderOnRotating: true
+        });
+        threeLayer.prepareToDraw = function (gl, scene, camera) {
+            var renderer = map._renderer.canvas;
+            var terrainLoader = new TerrainLoader({
+                scene: scene,
+                camera: camera,
+                renderer: renderer
+            });
+
+            renderer.autoClear = false;
+            terrainLoader.initTerrainLayer();
+            terrainLoader.loadTerrainLayer();
+
+
+        };
+        threeLayer.addTo(map);
+
+
+    </script>
+</body>
+
+</html>
