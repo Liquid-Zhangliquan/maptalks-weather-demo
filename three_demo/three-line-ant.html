@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <title>tele-pole</title>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.css">
+    <style>
+        html,
+        body {
+            margin: 0px;
+            height: 100%;
+            width: 100%;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.js"></script> -->
+    <!-- 需要用 maptalks worker 分支下的版本 -->
+    <script src="https://cdn.jsdelivr.net/npm/maptalks@1.0.0-alpha.3/dist/maptalks.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@maptalks/gl/dist/maptalksgl.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@maptalks/vt/dist/maptalks.vt.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@maptalks/vt.basic/dist/maptalks.vt.basic.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/108/three.js"></script>
+    <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.97.0/build/three.js"></script> -->
+    <script type="text/javascript" src="https://unpkg.com/maptalks.three@0.6.2/dist/maptalks.three.js"></script>
+    <script>
+        var map = new maptalks.Map("map", {
+            center: [117.01019226967264, 36.6320376773908],
+            zoom: 19,
+            pitch: 60,
+            bearing: 2.2737,
+            baseLayer: new maptalks.TileLayer('googlemap', {
+                style: 'Satellite',
+                urlTemplate: 'http://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}'
+            }),
+        });
+        map.on('click', function (evt) {
+            console.log(evt.coordinate)
+        })
+
+
+        var layer = new maptalks.VectorLayer('v').addTo(map);
+
+        var road = [{ x: 117.00850361336074, y: 36.63201498459418 },
+        { x: 117.01028970277775, y: 36.632014905926525 },
+        { x: 117.01085429630643, y: 36.63204941970545 },
+        { x: 117.0107474960555, y: 36.63174093330642 },
+        { x: 117.01056293700981, y: 36.630392823670235 },
+        { x: 117.01020673403912, y: 36.63038049290307 },
+        { x: 117.01031524368796, y: 36.63165588775766 },
+        { x: 117.01020345142797, y: 36.63180961775046 },
+        { x: 117.00868480538793, y: 36.631827035125156 },
+        { x: 117.00850361336074, y: 36.63201498459418 }
+        ];
+        var polygon = new maptalks.Polygon(road, {
+            symbol: {
+                // 'polygonPatternFile': 'pole/Telepoleenddiff.jpg',
+                'polygonOpacity': 1,
+                'lineColor': '#fff'
+            }
+        }).addTo(layer)
+
+        // the ThreeLayer to draw buildings
+        var threeLayer = new maptalks.ThreeLayer('t', {
+            forceRenderOnMoving: true,
+            forceRenderOnZooming: true,
+            forceRenderOnRotating: true,
+        });
+        // prepare data, load mtl into three scene.
+        threeLayer.prepareToDraw = function (gl, scene, camera) {
+            gl.setPixelRatio(window.devicePixelRatio);
+            scene.add(new THREE.AmbientLight(0xffffff));// soft white light
+
+
+            var ARC_SEGMENTS = 1000
+            var geometry = new THREE.BufferGeometry();
+            geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(ARC_SEGMENTS * 3), 3));
+            var arcpath = createArcpath()
+            var curve = new THREE.CatmullRomCurve3(arcpath);
+            curve.curveType = 'chordal';//catmullrom centripetal chordal
+            curve.mesh = new THREE.Line(geometry.clone(), new THREE.LineBasicMaterial({
+                color: 0xff0000,
+                opacity: 0.35
+            }));
+            curve.mesh.castShadow = true;
+
+            var position = curve.mesh.geometry.attributes.position;
+            var point = new THREE.Vector3();
+            for (var i = 0; i < ARC_SEGMENTS; i++) {
+
+                var t = i / (ARC_SEGMENTS - 1);
+                curve.getPoint(t, point);
+                position.setXYZ(i, point.x, point.y, point.z);
+            }
+
+            position.needsUpdate = true;
+
+
+            scene.add(curve.mesh)
+
+            const renderer = new THREE.WebGLRenderer({ 'context': gl.context, alpha: true, antialias: true });
+            // renderer.render(scene, camera);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            threeLayer._renderer.context = renderer
+            threeLayer.renderScene();
+            map.setPitch(60);
+        };
+
+
+
+        threeLayer.draw = function () {
+            this.renderScene();
+        }
+
+        threeLayer.drawOnInteracting = function () {
+            this.renderScene();
+        }
+
+        threeLayer.addTo(map);
+
+
+        function createArcpath() {
+            var arcpath = [];
+            var arcpoint = [
+                { x: 116.97007939431887, y: 36.62304768881094 },
+                { x: 117.00930629004574, y: 36.632094462759284 },
+                { x: 117.01026793036203, y: 36.632081574709986 },
+                { x: 117.05098290688659, y: 36.630963279627366 },
+            ]
+            for (var i = 0; i < arcpoint.length; i++) {
+                var v = threeLayer.coordinateToVector3(new maptalks.Coordinate(arcpoint[i].x, arcpoint[i].y));
+                if (i === 0 || i === 3) {
+                    v.z = 0.8;
+                } else {
+                    v.z = 0.06;
+                }
+                arcpath.push(v)
+            }
+            return arcpath;
+        }
+
+    </script>
+</body>
+
+</html>

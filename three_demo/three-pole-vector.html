@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <title>tele-pole</title>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.css">
+    <style>
+        html,
+        body {
+            margin: 0px;
+            height: 100%;
+            width: 100%;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+        }
+
+        .toolbar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 80px;
+            height: auto;
+            border: 1px solid #cdcdcd;
+            border-radius: 5px;
+        }
+
+        .btn {
+            float: left;
+            width: 80px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div class="toolbar">
+        <button class="btn" id="freeze">结冰</button>
+        <button class="btn" id="rest">撤销</button>
+    </div>
+    <script src="../js/jqure1.7.min.js"></script>
+    <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.js"></script> -->
+    <!-- 需要用 maptalks worker 分支下的版本 -->
+    <script src="https://cdn.jsdelivr.net/npm/maptalks@1.0.0-alpha.3/dist/maptalks.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@maptalks/gl/dist/maptalksgl.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@maptalks/vt/dist/maptalks.vt.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@maptalks/vt.basic/dist/maptalks.vt.basic.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/108/three.js"></script>
+    <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.97.0/build/three.js"></script> -->
+    <script type="text/javascript" src="../matalks/maptalks-tileLayercollection.js"></script>
+    <script type="text/javascript" src="../matalks/maptalks.three.js"></script>
+    <script type="text/javascript" src="../js/three/OBJLoader.js"></script>
+    <script src="../js/three/MTLLoader.js"></script>
+    <script src="../js/three/DDSLoader.js"></script>
+    <script>
+        var id = 'helle-world-layer';
+        var names = [
+            'Tdt-Normal', 'Tdt-Satellite', 'Tdt-Terrain',
+            'Geoq-Colour', 'Geoq-Gray', 'Geoq-Midnightblue',
+            'Google-Normal', 'Google-Satellite',
+            'Amap-Normal', 'Amap-Satellite',
+            'Tencent-Normal', 'Tencent-Satellite', 'Tencent-Terrain',
+            'Osm-Normal', 'Osm-Bike', 'Osm-Transport', 'Osm-Humanitarian',
+            'CartoDb-Light', 'CartoDb-Dark',
+            'Mapbox-Streets', 'Mapbox-Dark', 'Mapbox-LightDark', 'Mapbox-Satellite', 'Mapbox-Light',
+            'Mapbox-Emerald', 'Mapbox-White', 'Mapbox-Red', 'Mapbox-Outdoors', 'Mapbox-StreetsSatellite',
+            'Mapbox-Comic', 'Mapbox-Building'
+        ];
+
+        var tileLayers = {
+
+        }
+
+        for (var i = 0; i < names.length; i++) {
+            var name = names[i];
+            var nameArr = name.split('-');
+            var methodName = 'get' + nameArr[0] + 'TileLayer';
+            var style = nameArr[1];
+
+            var baseLayer = maptalks.TileLayerCollection[methodName](id + i, { style: style });
+            tileLayers[name] = baseLayer;
+        }
+        var map = new maptalks.Map("map", {
+            center: [117.01019226967264, 36.6320376773908],
+            zoom: 19,
+            pitch: 60,
+            bearing: 2.2737
+        });
+        map.setBaseLayer(tileLayers['Google-Satellite'])
+        map.on('click', function (evt) {
+            console.log(evt.coordinate)
+        })
+
+
+        var layer = new maptalks.VectorLayer('v').addTo(map);
+
+        var road = [{ x: 117.00850361336074, y: 36.63201498459418 },
+        { x: 117.01028970277775, y: 36.632014905926525 },
+        { x: 117.01085429630643, y: 36.63204941970545 },
+        { x: 117.0107474960555, y: 36.63174093330642 },
+        { x: 117.01056293700981, y: 36.630392823670235 },
+        { x: 117.01020673403912, y: 36.63038049290307 },
+        { x: 117.01031524368796, y: 36.63165588775766 },
+        { x: 117.01020345142797, y: 36.63180961775046 },
+        { x: 117.00868480538793, y: 36.631827035125156 },
+        { x: 117.00850361336074, y: 36.63201498459418 }
+        ];
+        var polygon = new maptalks.Polygon(road, {
+            symbol: {
+                'polygonPatternFile': 'pole/Telepoleenddiff.jpg',
+                'polygonOpacity': 1,
+                'lineColor': '#fff'
+            }
+        }).addTo(layer)
+
+        $('#freeze').unbind('click').bind('click', function () {
+            polygon.updateSymbol({
+                'polygonPatternFile': 'pole/Peened.jpg',
+            });
+        });
+        $('#rest').unbind('click').bind('click', function () {
+            polygon.updateSymbol({
+                'polygonPatternFile': 'pole/Telepoleenddiff.jpg',
+            });
+        });
+
+        THREE.Loader.Handlers.add(/\.dds$/i, new THREE.DDSLoader());
+
+        var mtlLoaded = false;
+
+        // the ThreeLayer to draw buildings
+        var threeLayer = new maptalks.ThreeLayer('t', {
+            forceRenderOnMoving: true,
+            forceRenderOnZooming: true,
+            forceRenderOnRotating: true,
+        });
+        // prepare data, load mtl into three scene.
+        threeLayer.prepareToDraw = function (gl, scene, camera) {
+            gl.setPixelRatio(window.devicePixelRatio);
+            scene.add(new THREE.AmbientLight(0xffffff));// soft white light
+
+            var objLoader = new THREE.OBJLoader();
+            objLoader.setPath('pole/');
+            objLoader.load('telepole.obj', function (object) {
+                var infantry = createInfantry(object);
+                infantry.forEach(function (o) {
+                    scene.add(o);
+                });
+                // crete line 
+                // var geometry1 = new THREE.Geometry();
+                // geometry1.vertices.push(path[0], path[1]); 
+                // var material1 = new THREE.LineBasicMaterial({
+                //     color: 0x0000ff, 
+                // });
+                // var line1 = new THREE.Line(geometry1, material1);
+                // scene.add(line1);//线条对象添加到场景中
+
+                var geometry2 = new THREE.Geometry();//声明一个空几何体对象
+                geometry2.vertices.push(path[1], path[2]); //顶点坐标添加到geometry对象
+                var material2 = new THREE.LineBasicMaterial({
+                    color: 0x0000ff, //线条颜色
+                });//材质对象
+                var line2 = new THREE.Line(geometry2, material2);//线条模型对象
+                scene.add(line2);//线条对象添加到场景中
+                // create arc line 
+                // var curve1 = new THREE.CatmullRomCurve3([path[0], path[1]],false,'catmullrom',0.1);
+                // var points = curve1.getPoints(50);
+                // var geometry3 = new THREE.BufferGeometry().setFromPoints(points);
+                // var material3 = new THREE.LineBasicMaterial({
+                //     color: 0x0000ff,
+                // });
+                // // Create the final object to add to the scene
+                // var curveObject = new THREE.Line(geometry3, material3);
+                // scene.add(curveObject)
+
+
+                // var geometry3 = new THREE.Geometry();//声明一个空几何体对象
+                // geometry3.vertices.push(path[0], path[1]); //顶点坐标添加到geometry对象
+                
+                var geometry3 = new THREE.BufferGeometry();
+				geometry3.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array( 200 * 3 ), 3 ) );
+                var curve = new THREE.CatmullRomCurve3(arcpath);
+                curve.curveType = 'chordal';//catmullrom centripetal chordal
+                curve.mesh = new THREE.Line(geometry3.clone(), new THREE.LineBasicMaterial({
+                    color: 0xff0000,
+                    opacity: 0.35
+                }));
+                curve.mesh.castShadow = true;
+
+
+                var position = curve.mesh.geometry.attributes.position;
+                var point = new THREE.Vector3();
+                for (var i = 0; i < 200; i++) {
+
+                    var t = i / (200 - 1);
+                    curve.getPoint(t, point);
+                    position.setXYZ(i, point.x, point.y, point.z);
+
+                }
+
+                position.needsUpdate = true;
+
+
+                scene.add(curve.mesh)
+                // splines.uniform = curve;
+                // curve = new THREE.CatmullRomCurve3(positions);
+                // curve.curveType = 'centripetal';
+                // curve.mesh = new THREE.Line(geometry.clone(), new THREE.LineBasicMaterial({
+                //     color: 0x00ff00,
+                //     opacity: 0.35
+                // }));
+                // curve.mesh.castShadow = true;
+                // splines.centripetal = curve;
+                // curve = new THREE.CatmullRomCurve3(positions);
+                // curve.curveType = 'chordal';
+                // curve.mesh = new THREE.Line(geometry.clone(), new THREE.LineBasicMaterial({
+                //     color: 0x0000ff,
+                //     opacity: 0.35
+                // }));
+                // curve.mesh.castShadow = true;
+                // splines.chordal = curve;
+
+                // const renderer = new THREE.WebGLRenderer({ 'context' : gl.context , alpha : true,antialias: true});
+                // // renderer.render(scene, camera);
+                // renderer.setPixelRatio( window.devicePixelRatio );
+                // renderer.setSize( window.innerWidth, window.innerHeight );
+
+                // threeLayer._renderer.context = renderer
+                threeLayer.renderScene();
+                map.setPitch(60);
+                mtlLoaded = true;
+            });
+        };
+
+        threeLayer.draw = function () {
+            if (mtlLoaded) {
+                this.renderScene();
+            }
+        }
+
+        threeLayer.drawOnInteracting = function () {
+            if (mtlLoaded) {
+                this.renderScene();
+            }
+        }
+
+        threeLayer.addTo(map);
+
+        var path = [];
+        var arcpath = [];
+        function createInfantry(obj) {
+            var extent = map.getExtent();
+            var infantry = [];
+            var points = [{ x: 117.00859096740032, y: 36.63211254997927 }, { x: 117.01092305593033, y: 36.63208690484143 }, { x: 117.01073400744644, y: 36.630892523308574 }]
+            for (var i = 0; i < points.length; i++) {
+                var object = obj.clone();
+                object.traverse(function (child) {
+                    if (child instanceof THREE.Mesh) {
+                        child.rotation.set(Math.PI * 1 / 2, 0, 0);
+                        child.scale.set(0.02, 0.02, 0.02);
+                    }
+                });
+                // var x = extent.xmin + Math.random() * extent.getWidth();
+                // var y = extent.ymin + Math.random() * extent.getHeight();
+                // var x = extent.xmin + extent.getWidth() / 10 * (i % 10);
+                // var y = extent.ymin + extent.getHeight() / 10 * Math.floor(i / 10);
+                var v = threeLayer.coordinateToVector3(new maptalks.Coordinate(points[i].x, points[i].y));
+                object.position.x = v.x;
+                object.position.y = v.y;
+                object.position.z = v.z;
+                infantry.push(object);
+                v.z = 0.12;
+                path.push(v)
+            }
+            var arcpoint = [
+                { x: 117.00859096740032, y: 36.63211254997927 },
+                { x: 117.00930629004574, y: 36.632094462759284 },
+                { x: 117.01026793036203, y: 36.632081574709986 },
+                { x: 117.01092305593033, y: 36.63208690484143 },
+            ]
+            // var arcpoint = [
+            //     { x: 117.00659096740032, y: 36.63211254997927 },
+            //     { x: 117.00730629004574, y: 36.632094462759284 },
+            //     { x: 117.00826793036203, y: 36.632081574709986 },
+            //     { x: 117.01092305593033, y: 36.63208690484143 },
+            // ]
+            for (var i = 0; i < arcpoint.length; i++) {
+                var object = obj.clone();
+                object.traverse(function (child) {
+                    if (child instanceof THREE.Mesh) {
+                        child.rotation.set(Math.PI * 1 / 2, 0, 0);
+                        child.scale.set(0.02, 0.02, 0.02);
+                    }
+                });
+                var v = threeLayer.coordinateToVector3(new maptalks.Coordinate(arcpoint[i].x, arcpoint[i].y));
+                object.position.x = v.x;
+                object.position.y = v.y;
+                object.position.z = v.z;
+                if (i === 0 || i === 3) {
+                    v.z = 0.12;
+                } else {
+                    v.z = 0.06;
+                }
+                arcpath.push(v)
+            }
+            return infantry;
+        }
+
+    </script>
+</body>
+
+</html>

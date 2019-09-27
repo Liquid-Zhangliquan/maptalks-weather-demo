@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>vector</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.css">
+  <!-- 需要用 maptalks worker 分支下的版本 -->
+  <script src="https://cdn.jsdelivr.net/npm/maptalks@1.0.0-alpha.3/dist/maptalks.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@maptalks/gl/dist/maptalksgl.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@maptalks/vt/dist/maptalks.vt.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@maptalks/vt.basic/dist/maptalks.vt.basic.js"></script>
+  <style>
+    html, body {
+      margin: 0px;
+      height: 100%;
+      width: 100%;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+    }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+  const lastConfig = {
+    '-50': [0, 0, 255],
+    '-30': [0, 20, 255],
+    '-28': [0, 68, 255],
+    '-26': [0, 102, 255],
+    '-24': [0, 132, 255],
+    '-22': [0, 166, 255],
+    '-20': [0, 200, 255],
+    '-18': [0, 234, 255],
+    '-16': [0, 255, 247],
+    '-14': [0, 255, 212],
+    '-12': [0, 255, 179],
+    '-10': [0, 255, 144],
+    '-8': [0, 255, 115],
+    '-6': [0, 255, 81],
+    '-4': [0, 255, 47],
+    '-2': [0, 255, 13],
+  };
+
+  const config = {
+    '0': [17, 255, 0],
+    '2': [51, 255, 0],
+    '4': [85, 255, 0],
+    '6': [119, 255, 0],
+    '8': [149, 255, 0],
+    '10': [183, 255, 0],
+    '12': [217, 255, 0],
+    '14': [251, 255, 0],
+    '16': [255, 229, 0],
+    '18': [255, 195, 0],
+    '20': [255, 162, 0],
+    '22': [255, 128, 0],
+    '24': [255, 98, 0],
+    '26': [255, 64, 0],
+    '28': [255, 45, 0],
+    '30': [255, 35, 0],
+    '32': [255, 20, 0],
+    '35': [255, 0, 0],
+  };
+
+  let values = [];
+  const colors = [];
+  Object.keys(lastConfig).forEach(key => {
+    values.push(key);
+    colors.push(`rgb(${lastConfig[key].join(',')})`);
+  });
+
+  Object.keys(config).forEach(key => {
+    values.push(key);
+    colors.push(`rgb(${config[key].join(',')})`);
+  });
+
+  values = values.map(val => {
+    console.log(val);
+    // return (Number(val) + 50) / (35 + 50);
+    return Number(val);
+  });
+
+  var map = new maptalks.Map("map", {
+    center: [108.18095703125005, 34.34141675361363],
+    zoom: 5,
+    seamlessZoom: false,
+    minZoom: 1,
+    // collisionAutoClear: true,
+    // dragPitch: false,
+    centerCross: true,
+    doubleClickZoom: true,
+    spatialReference: {
+      projection: 'EPSG:3857',
+    },
+    baseLayer: new maptalks.TileLayer('base-map', {
+      spatialReference: {
+        projection: 'baidu',
+      },
+      // urlTemplate: 'http://online{s}.map.bdimg.com/tile/?qt=vtile&x={x}&y={y}&z={z}&styles=pl&scaler=2&udt=20190821',
+      // urlTemplate: 'https://map.geoq.cn/arcgis/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}',
+      // urlTemplate: 'https://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/tile/{z}/{y}/{x}',
+      // urlTemplate: 'https://tilemap.geoq.cn/database/ytt_basemap/layergroup/ae9d66ff40896f13166f10378a3e948f/0,1,2,3,4,5,6,7,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,27,28,29,30,31,32,33,34,35,36,37,38,40,41,42,43,44,45,46,47,48,49,50/{z}/{x}/{y}.png',
+      urlTemplate: 'http://online{s}.map.bdimg.com/tile/?qt=vtile&x={x}&y={y}&z={z}&styles=pl&scaler=2&udt=20190821',
+      subdomains: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      repeatWorld: 'x',
+    }),
+  });
+
+  // var layer = new maptalks.VectorTileLayer()
+  // var layer = new maptalks.MapboxVectorTileLayer('mapbox', {
+  //   spatialReference: {
+  //     projection: 'EPSG:3857',
+  //   },
+  //   style: [
+  //
+  //   ],
+  //   defaultRendering: true,
+  //   // urlTemplate: 'http://localhost:8090/data/v3/{z}/{x}/{y}.pbf',
+  //   urlTemplate: 'https://api.mapbox.com/v4/mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2/{z}/{x}/{y}.vector.pbf?sku=101mZOOmCUtda&access_token=pk.eyJ1Ijoic21pbGVmZGQiLCJhIjoiY2owbDBkb2RwMDJyMTMycWRoeDE4d21sZSJ9.dWlPeAWsgnhUKdv1dCLTnw',
+  // });
+
+  // map.addLayer(layer);
+  // fetch('./json/province.geojson')
+  fetch('http://58.87.95.84/cdn/json/temp.json')
+    .then(res => res.json())
+    .then(res => {
+      var geo = new maptalks.GeoJSONVectorTileLayer('geojson', {
+        // spatialReference: {
+        //   projection: 'EPSG:4326',
+        // },
+        // urlTemplate: 'http://localhost:8090/data/v3/{z}/{x}/{y}.geojson',
+        data: res,
+        style: [
+          ...values.map((val, index) => ({
+            'filter': ['==', 'value', val],
+            renderPlugin: {
+              dataConfig: {
+                only2D: true,
+                type: 'fill'
+              },
+              sceneConfig: {
+                depthRange: [0.9999, 0.9999],
+              },
+              type: 'fill',
+            },
+            'symbol': {
+              'lineColor' : '#34495e',
+              'lineWidth' : 0,
+              'polygonFill' : colors[index],
+              'polygonOpacity' : 0.5
+            }
+          }))
+        ]
+        // style: {
+        //   renderPlugin: {
+        //     dataConfig: {
+        //       only2D: true,
+        //       type: 'fill'
+        //     },
+        //     sceneConfig: {
+        //       depthRange: [0.9999, 0.9999],
+        //     },
+        //     type: 'fill',
+        //   },
+        //   symbol: {
+        //     polygonFill: {
+        //       property: 'color',
+        //       type: 'identity',
+        //       default: 'rgba(0, 176, 15, 0.3)',
+        //     },
+        //     polygonOpacity: {
+        //       property: 'polygonOpacity',
+        //       type: 'identity',
+        //       default: 1,
+        //     },
+        //   }
+        // }
+      });
+
+      map.addLayer(geo);
+      window.geo = geo;
+    });
+</script>
+</body>
+
+</html>

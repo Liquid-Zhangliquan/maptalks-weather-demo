@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>maptalks-three-terrain</title>
+    <title>thee-terrain</title>
     <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.css">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.97.0/build/three.min.js"></script>
@@ -37,44 +37,40 @@
         var modelAltitude = 0;
         var modelRotate = [Math.PI / 2, 0, 0];
         var modelScale = 5.31843220338983e-5;
-
-        // transformation parameters to position, rotate and scale the 3D model onto the map
-        // var modelTransform = {
-        //     translateX: mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude).x,
-        //     translateY: mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude).y,
-        //     translateZ: mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude).z,
-        //     rotateX: modelRotate[0],
-        //     rotateY: modelRotate[1],
-        //     rotateZ: modelRotate[2],
-        //     scale: modelScale
-        // };
         var map = new maptalks.Map("map", {
             center: [-0.048366, 0.570150],
             zoom: 9,
             pitch: 80,
             bearing: 16.8,
-
             centerCross: true,
             doubleClickZoom: false,
-            // baseLayer: new maptalks.TileLayer('tile', {
-            //     urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-            //     subdomains: ['a', 'b', 'c', 'd'],
-            //     attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
-            // })
+            baseLayer: new maptalks.TileLayer('tile', {
+                urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                subdomains: ['a', 'b', 'c', 'd'],
+                attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+            })
         });
+
+        // the ThreeLayer to draw buildings
         var threeLayer = new maptalks.ThreeLayer('t', {
             forceRenderOnMoving: true,
             forceRenderOnRotating: true
         });
         threeLayer.prepareToDraw = function (gl, scene, camera) {
-            var renderer = map._renderer.canvas;
+
+            // use the Mapbox GL JS map canvas for three.js
+            // var renderer = new THREE.WebGLRenderer({
+            //     canvas: document.getElementById('height'),
+            //     context: gl.context
+            // });
+            // var renderer = map._renderer.canvas;
             var terrainLoader = new TerrainLoader({
                 scene: scene,
                 camera: camera,
-                renderer: renderer
+                renderer: threeLayer.getThreeRenderer()
             });
 
-            renderer.autoClear = false;
+            // renderer.autoClear = false;
             terrainLoader.initTerrainLayer();
             terrainLoader.loadTerrainLayer();
 
