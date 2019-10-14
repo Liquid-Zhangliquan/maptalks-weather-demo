@@ -455,8 +455,10 @@ var kriging = function () {
 		var i, j, x, y, z;
 		var n = grid.length;
 		var m = grid[0].length;
-		var wx = Math.ceil(grid.width * canvas.width / (xlim[1] - xlim[0]));
-		var wy = Math.ceil(grid.width * canvas.height / (ylim[1] - ylim[0]));
+		// var wx = Math.ceil(grid.width * canvas.width / (xlim[1] - xlim[0]));
+		// var wy = Math.ceil(grid.width * canvas.height / (ylim[1] - ylim[0]));
+		var wx = grid.width * canvas.width / (xlim[1] - xlim[0])
+		var wy = grid.width * canvas.height / (ylim[1] - ylim[0])
 		for (i = 0; i < n; i++)
 			for (j = 0; j < m; j++) {
 				if (grid[i][j] == undefined) continue;
@@ -471,7 +473,8 @@ var kriging = function () {
 
 
 				ctx.fillStyle = this.getColor(colors, grid[i][j]);
-				ctx.fillRect(Math.round(x - wx / 2), Math.round(y - wy / 2), wx, wy);
+				// ctx.fillRect(Math.round(x - wx / 2), Math.round(y - wy / 2), wx, wy);
+				ctx.fillRect(x - wx / 2, y - wy / 2, wx, wy);
 			}
 
 	};

@@ -37,7 +37,7 @@
             let params = {
                 mapCenter: [115.79, 36.142],
                 krigingModel: 'exponential',//model还可选'gaussian','spherical' 'exponential'
-                krigingSigma2: 50,
+                krigingSigma2: 30,
                 krigingAlpha: 121,
                 canvasAlpha: 0.5,//canvas图层透明度
                 colors: [
@@ -107,7 +107,7 @@
                     let letiogram = kriging.train(values, lngs, lats,
                         params.krigingModel, params.krigingSigma2, params.krigingAlpha);
                     let ex = clipgeom.getExtent();
-                    let grid = kriging.grid(coord, letiogram, (ex[2] - ex[0]) / 200);
+                    let grid = kriging.grid(coord, letiogram, (ex[2] - ex[0]) / 500);
                     //移除已有图层
                     if (canvasLayer !== null) {
                         map.removeLayer(canvasLayer);
