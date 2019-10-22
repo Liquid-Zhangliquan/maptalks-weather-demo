@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>turf等值线</title>
+    <style>
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+    <link href="../openlayer/ol.css" rel="stylesheet" />
+    <script src="../openlayer/ol-debug.js"></script>
+    <script src="../js/jqure1.7.min.js"></script>
+    <script src="../js/turf.min.js"></script>
+</head>
+
+<body>
+    <div id="map"></div>
+    <script type="text/javascript">
+
+        function AjaxGET() {
+            $.ajax({
+                type: "get",
+                url: "../data/getLatest.json",
+                dataType: "json",
+                success: function (json) {
+                    console.log(json.data)
+                    MapInit(json.data)
+                }
+            });
+        }
+        AjaxGET()
+
+        // function MapInit(data) {
+        //     var feas = [];
+        //     for (var i = 0; i < data.length; i++) {
+        //         if (data[i].lon && data[i].lat && data[i].AQI) {
+        //             feas.push(turf.point([Number(data[i].lon), Number(data[i].lat)], { AQI: data[i].AQI }))
+        //         }
+        //     }
+        //     var FeatureCollection = turf.featureCollection(feas);
+        //     var breaks = [70,80,90,100];
+        //     var lines = turf.isolines(FeatureCollection, breaks, { zProperty: 'AQI' });
+        //     var featureslines = (new ol.format.GeoJSON()).readFeatures(lines);
+        //     var source = new ol.source.Vector({
+        //         features: featureslines
+        //     });
+        //     var vector = new ol.layer.Vector({
+        //         source: source,
+        //         style: function (feature) {
+        //             var AQI = feature.get("AQI");
+        //             var colors = ["#5a9fdd", "#f7eb0c", "#fc9e10", "#f81e0d", "#aa2ab3"];
+        //             var color = colors[parseInt(AQI / 2)];
+        //             return new ol.style.Style({
+        //                 fill: new ol.style.Fill({ color: "#5a9fdd" }),
+        //                 stroke: new ol.style.Stroke({ color: "#5a9fdd", width: 4 }),
+        //                 image: new ol.style.Circle({
+        //                     radius: 5, fill: new ol.style.Fill({ color: "#5a9fdd" }),
+        //                     stroke: new ol.style.Stroke({ color: '#fff', width: 1 })
+        //                 })
+        //             });
+        //         }
+        //     });
+        //     var baseLayer = new ol.layer.Tile({
+        //         title: "base",
+        //         source: new ol.source.OSM()
+        //     });
+        //     var map = new ol.Map({
+        //         target: 'map',
+        //         layers: [baseLayer],
+        //         view: new ol.View({
+        //             center: [115.79, 36.142],
+        //             projection: 'EPSG:4326',
+        //             zoom: 8
+        //         })
+        //     });
+        //     map.addLayer(vector)
+        // }
+
+
+
+
+
+    </script>
+</body>
+
+</html>
