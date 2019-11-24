@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>前端空间插值</title>
+    <style>
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+    <link href="../openlayer/ol.css" rel="stylesheet" />
+    <script src="../openlayer/ol-debug.js"></script>
+    <script src="../js/jqure1.7.min.js"></script>
+    <script src="../js/turf.min.js"></script>
+    <script src="../js/kriging/kriging_.js"></script>
+</head>
+
+<body>
+    <div id="map"></div>
+    <script type="text/javascript">
+
+        function AjaxGET() {
+            $.ajax({
+                type: "get",
+                url: "../data/getLatest.json",
+                dataType: "json",
+                success: function (json) {
+                    console.log(json)
+                }
+            });
+        }
+        AjaxGET()
+
+        let params = {
+            mapCenter: [121.483101, 31.227036],
+            maxValue: 100,
+            krigingModel: 'spherical',//model还可选'gaussian','spherical',exponential
+            krigingSigma2: 0,
+            krigingAlpha: 100,
+            canvasAlpha: 0.75,//canvas图层透明度
+            colors: ["#006837", "#1a9850", "#66bd63", "#a6d96a", "#d9ef8b", "#ffffbf",
+                "#fee08b", "#fdae61", "#f46d43", "#d73027", "#a50026"],
+        };
+        let baseLayer = new ol.layer.Tile({
+            title: "base",
+            source: new ol.source.OSM()
+        });
+        let map = new ol.Map({
+            target: 'map',
+            layers: [baseLayer],
+            view: new ol.View({
+                center: params.mapCenter,
+                projection: 'EPSG:4326',
+                zoom: 16
+            })
+        });
+        let WFSVectorSource = new ol.source.Vector();
+        let WFSVectorLayer = new ol.layer.Vector(
+            {
+                source: WFSVectorSource,
+            });
+        map.addLayer(WFSVectorLayer);
+        
+        //添加选择和框选控件，按住Ctr键，使用鼠标框选采样点
+        let select = new ol.interaction.Select();
+        map.addInteraction(select);
+        let dragBox = new ol.interaction.DragBox({
+            condition: ol.events.condition.platformModifierKeyOnly
+        });
+        map.addInteraction(dragBox);
+
+
+        //创建15个位置随机、属性值随机的特征点
+        for (let i = 0; i < 15; i++) {
+            let feature = new ol.Feature({
+                geometry: new ol.geom.Point(
+                    [
+                        params.mapCenter[0] + Math.random() * 0.01 - .005,
+                        params.mapCenter[1] + Math.random() * 0.01 - .005
+                    ]
+                ),
+                value: Math.round(Math.random() * params.maxValue)
+            });
+            feature.setStyle(new ol.style.Style({
+                image: new ol.style.Circle({
+                    radius: 6,
+                    fill: new ol.style.Fill({ color: "#00F" })
+                })
+            }));
+            WFSVectorSource.addFeature(feature);
+        }
+
+   
+        //设置框选事件
+        let selectedFeatures = select.getFeatures();
+        dragBox.on('boxend', () => {
+            let extent = dragBox.getGeometry().getExtent();
+            WFSVectorSource.forEachFeatureIntersectingExtent(extent, (feature) => {
+                selectedFeatures.push(feature);
+            });
+            drawKriging(extent);
+        });
+        dragBox.on('boxstart', () => {
+            selectedFeatures.clear();
+        });
+
+        //利用网格计算点集
+        const gridFeatureCollection = function (grid, xlim, ylim) {
+            var range =grid.zlim[1] - grid.zlim[0];
+            var i, j, x, y, z;
+            var n = grid.length;//列数
+            var m = grid[0].length;//行数
+            var pointArray = [];
+            for (i = 0; i < n ; i++)
+                for (j = 0; j < m ; j++) {
+                    x = (i) * grid.width + grid.xlim[0];
+                    y = (j) * grid.width + grid.ylim[0];
+                    z = (grid[i][j] - grid.zlim[0]) / range;
+                    if (z < 0.0) z = 0.0;
+                    if (z > 1.0) z = 1.0;
+                    pointArray.push(turf.point([x, y], { value: z }));
+                }
+            return pointArray;
+        }
+        //绘制kriging插值图
+        let vectorLayer = null;
+        const drawKriging = (extent) => {
+            let values = [], lngs = [], lats = [];
+            selectedFeatures.forEach(feature => {
+                values.push(feature.values_.value);
+                lngs.push(feature.values_.geometry.flatCoordinates[0]);
+                lats.push(feature.values_.geometry.flatCoordinates[1]);
+            });
+            if (values.length > 3) {
+                let variogram = kriging.train(
+                    values,
+                    lngs,
+                    lats,
+                    params.krigingModel,
+                    params.krigingSigma2,
+                    params.krigingAlpha
+                );
+                let polygons = [];
+                polygons.push([
+                    [extent[0], extent[1]], [extent[0], extent[3]],
+                    [extent[2], extent[3]], [extent[2], extent[1]]
+                ]);
+                let grid = kriging.grid(polygons, variogram, (extent[2] - extent[0]) / 500);
+                let dragboxExtent = extent;
+
+                if (vectorLayer !== null) {
+                    map.removeLayer(vectorLayer);
+                }
+                var vectorSource = new ol.source.Vector();
+                vectorLayer = new ol.layer.Vector(
+                    {
+                        source: vectorSource,
+                        opacity: 0.7,
+                        style: function (feature) {
+                            
+                            var style = new ol.style.Style({
+                                fill: new ol.style.Fill({
+                                    color: params.colors[parseFloat(feature.get('value').split('-')[1]) * 10]
+                                })
+                            })
+                            return style;
+                        }
+                    }
+                )
+                //使用turf渲染等值面/线
+                let fc = gridFeatureCollection(grid,
+                    [extent[0], extent[2]], [extent[1], extent[3]]);
+                var collection = turf.featureCollection(fc);
+                var breaks = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
+                var isobands = turf.isobands(collection, breaks, { zProperty: 'value' });
+                function sortArea(a,b)
+                {
+                    return turf.area(b)-turf.area(a);
+                }
+                //按照面积对图层进行排序，规避turf的一个bug
+                isobands.features.sort(sortArea)
+                var polyFeatures = new ol.format.GeoJSON().readFeatures(isobands, {
+                    featureProjection: 'EPSG:4326'
+                })
+                vectorSource.addFeatures(polyFeatures);
+
+                map.addLayer(vectorLayer);
+            } else {
+                alert("有效样点个数不足，无法插值");
+            }
+        }
+
+        let extent = [params.mapCenter[0] - .005, params.mapCenter[1] - .005, params.mapCenter[0] + .005, params.mapCenter[1] + .005];
+        WFSVectorSource.forEachFeatureIntersectingExtent(extent, (feature) => {
+            selectedFeatures.push(feature);
+        });
+        drawKriging(extent);
+    </script>
+</body>
+
+</html>
