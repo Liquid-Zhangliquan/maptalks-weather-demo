@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>百度地图</title>
+    <style>
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+    <link href="../openlayer/ol.css" rel="stylesheet" />
+    <script src="../openlayer/ol-debug.js"></script>
+</head>
+
+<body>
+    <div id="map"></div>
+    <script type="text/javascript">
+        var projection = ol.proj.get("EPSG:3857");
+        var resolutions = [];
+        for (var i = 0; i < 19; i++) {
+            resolutions[i] = Math.pow(2, 18 - i);
+        }
+        var tilegrid = new ol.tilegrid.TileGrid({
+            origin: [0, 0],
+            resolutions: resolutions,
+            // extent: extent,//projectionExtent,
+            tileSize: [256, 256],
+        });
+
+        // 'http://api{s}.map.bdimg.com/customimage/tile?&x={x}&y={y}&z={z}&udt=20170620&scale=1&ak=8d6c8b8f3749aed6b1aff3aad6f40e37&styles=t%3Awater%7Ce%3Aall%7Cc%3A%23044161%2Ct%3Aland%7Ce%3Aall%7Cc%3A%23091934%2Ct%3Aboundary%7Ce%3Ag%7Cc%3A%23064f85%2Ct%3Arailway%7Ce%3Aall%7Cv%3Aoff%2Ct%3Ahighway%7Ce%3Ag%7Cc%3A%23004981%2Ct%3Ahighway%7Ce%3Ag.f%7Cc%3A%23005b96%7Cl%3A1%2Ct%3Ahighway%7Ce%3Al%7Cv%3Aon%2Ct%3Aarterial%7Ce%3Ag%7Cc%3A%23004981%7Cl%3A-39%2Ct%3Aarterial%7Ce%3Ag.f%7Cc%3A%2300508b%2Ct%3Agreen%7Ce%3Aall%7Cv%3Aoff%7Cc%3A%23056197%2Ct%3Asubway%7Ce%3Aall%7Cv%3Aoff%2Ct%3Amanmade%7Ce%3Aall%7Cv%3Aoff%2Ct%3Alocal%7Ce%3Aall%7Cv%3Aoff%2Ct%3Aarterial%7Ce%3Al%7Cv%3Aon%2Ct%3Aboundary%7Ce%3Ag.f%7Cc%3A%23029fd4%2Ct%3Abuilding%7Ce%3Aall%7Cc%3A%231a5787%2Ct%3Apoi%7Ce%3Aall%7Cv%3Aoff%2Ct%3Aall%7Ce%3Al%7Cv%3Aoff'
+
+        var ak = '8d6c8b8f3749aed6b1aff3aad6f40e37';
+        var style = 't%3Awater%7Ce%3Aall%7Cc%3A%23044161%2Ct%3Aland%7Ce%3Aall%7Cc%3A%23091934%2Ct%3Aboundary%7Ce%3Ag%7Cc%3A%23064f85%2Ct%3Arailway%7Ce%3Aall%7Cv%3Aoff%2Ct%3Ahighway%7Ce%3Ag%7Cc%3A%23004981%2Ct%3Ahighway%7Ce%3Ag.f%7Cc%3A%23005b96%7Cl%3A1%2Ct%3Ahighway%7Ce%3Al%7Cv%3Aon%2Ct%3Aarterial%7Ce%3Ag%7Cc%3A%23004981%7Cl%3A-39%2Ct%3Aarterial%7Ce%3Ag.f%7Cc%3A%2300508b%2Ct%3Agreen%7Ce%3Aall%7Cv%3Aoff%7Cc%3A%23056197%2Ct%3Asubway%7Ce%3Aall%7Cv%3Aoff%2Ct%3Amanmade%7Ce%3Aall%7Cv%3Aoff%2Ct%3Alocal%7Ce%3Aall%7Cv%3Aoff%2Ct%3Aarterial%7Ce%3Al%7Cv%3Aon%2Ct%3Aboundary%7Ce%3Ag.f%7Cc%3A%23029fd4%2Ct%3Abuilding%7Ce%3Aall%7Cc%3A%231a5787%2Ct%3Apoi%7Ce%3Aall%7Cv%3Aoff%2Ct%3Aall%7Ce%3Al%7Cv%3Aoff'
+        var baidu_source = new ol.source.TileImage({
+            projection: projection,
+            tileGrid: tilegrid,
+            tileUrlFunction: function (xyz, obj1, obj2) {
+                if (!xyz) {
+                    return "";
+                }
+                var z = xyz[0];
+                var x = xyz[1];
+                var y = xyz[2];
+                if (x < 0) {
+                    x = "M" + (-x);
+                }
+                if (y < 0) {
+                    y = "M" + (-y);
+                }
+                // return "http://online3.map.bdimg.com/tile/?qt=tile&x=" + x + "&y=" + y + "&z=" + z + "&styles=pl&udt=20141119&scaler=1";
+                return "http://api0.map.bdimg.com/customimage/tile?&x=" + x + "&y=" + y + "&z=" + z + "&udt=20141119&scaler=1&ak="+ak+"&styles="+style;
+            }
+        });
+
+        var baidu_layer = new ol.layer.Tile({
+            source: baidu_source
+        });
+        let map = new ol.Map({
+            target: 'map',
+            layers: [baidu_layer],
+            view: new ol.View({
+                center: [120.80571740625517, 31.796373311867274],
+                projection: 'EPSG:4326',
+                zoom: 10
+            })
+        });
+    </script>
+</body>
+
+</html>
